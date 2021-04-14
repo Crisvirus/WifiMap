@@ -44,6 +44,37 @@ class WIFIAP:
         self.IPType = IPType
         self.IP = IP
 
+    def update(self, newAP):
+        if newAP.GPSMinLat != 0.0 and newAP.GPSMinLat < self.GPSMinLat:
+            self.GPSMinLat = newAP.GPSMinLat
+        
+        if newAP.GPSMinLon != 0.0 and newAP.GPSMinLon < self.GPSMinLon:
+            self.GPSMinLon = newAP.GPSMinLon
+
+        if newAP.GPSMinAlt != 0.0 and newAP.GPSMinAlt < self.GPSMinAlt:
+            self.GPSMinAlt = newAP.GPSMinAlt
+
+        if newAP.GPSMaxLat != 0.0 and newAP.GPSMaxLat > self.GPSMaxLat:
+            self.GPSMaxLat = newAP.GPSMaxLat
+        
+        if newAP.GPSMaxLon != 0.0 and newAP.GPSMaxLon > self.GPSMaxLon:
+            self.GPSMinLon = newAP.GPSMinLon
+
+        if newAP.GPSMaxAlt != 0.0 and newAP.GPSMaxAlt > self.GPSMaxAlt:
+            self.GPSMaxAlt = newAP.GPSMaxAlt
+
+        if self.GPSBestLat == 0.0:
+            self.GPSMaxLat = newAP.GPSMaxLat
+
+        if self.GPSBestLon == 0.0:
+            self.GPSMaxLon = newAP.GPSMaxLon
+
+        if newAP.FirstTime < self.FirstTime:
+            self.FirstTime = newAP.FirstTime
+
+        if newAP.LastTime > self.LastTime:
+            self.LastTime = newAP.LastTime
+
     def getHTML(self):
         FirstTime = self.FirstTime.strftime("%d-%m-%y %H:%M:%S")
         LastTime = self.LastTime.strftime("%d-%m-%y %H:%M:%S")

@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from WIFIAPHandler import WIFIAPHandler
 from os import curdir, sep
+from os import path
 import json
 import cgi
 import ssl
@@ -104,6 +105,20 @@ def MakeHandlerClassFromArgv(WIFIAP_handler):
                     self._set_response('application/json')
                     self.wfile.write(bytearray(html,"UTF-8"))
                     return
+                
+                try:
+                    file = self.path.split("/")[1]
+                    f = open(curdir + sep + "HTML/"+file)
+                    self._set_response('text/html')
+                    self.wfile.write(bytearray(f.read(),"UTF-8"))
+                    f.close()
+                    return
+                except:
+                    f = open(curdir + sep + "HTML/404.html")
+                    self._set_response('text/html')
+                    self.wfile.write(bytearray(f.read(),"UTF-8"))
+                    f.close()
+                    return
             
             else:
                 print("Bad token\n")
@@ -134,6 +149,52 @@ def MakeHandlerClassFromArgv(WIFIAP_handler):
             self.serveWithCookie()
 
         def do_POST(self):
+            if self.path == "/uploadfile":
+                token = ''
+                if "Cookie" in self.headers:
+                    cookie_string = self.headers.get('Cookie')
+                    c = cookies.SimpleCookie()
+                    c.load(cookie_string)
+                    for key, morsel in c.items():
+                        if key == 'token':
+                            token = morsel.value
+                else:
+                    print("No cookie for you\n")
+                
+                if token_is_valid(token):
+                    form = cgi.FieldStorage(
+                        fp=self.rfile, 
+                        headers=self.headers,
+                        environ={'REQUEST_METHOD':'POST',
+                                'CONTENT_TYPE':self.headers['Content-Type']
+                                })
+                    
+                    filename = form['filename'].filename
+                    file = form['filename'].file.read()
+                    
+                    if path.isfile("./kismet/"+filename):
+                        print ("File exist")
+                        self.send_response(301)
+                        self.send_header('Location','/fail.html')
+                        self.end_headers()
+                        return
+                    else:
+                        print ("File not exist")
+                        f = open("./kismet/"+filename,'w')
+                        f.write(file.decode("ISO-8859-1"))
+                        f.close()
+                        self.send_response(301)
+                        self.send_header('Location','/success.html')
+                        self.end_headers()
+                        WIFIAP_handler.update_from_file("./kismet/"+filename)
+                        return
+                    
+                    
+                else:
+                    print("Bad token\n")
+                    self.send_response(301)
+                    self.send_header('Location','/')
+                    self.end_headers()
             #==========================Login===========================
             if self.path=="/login":
                 print("Login\n")
@@ -143,6 +204,7 @@ def MakeHandlerClassFromArgv(WIFIAP_handler):
                     environ={'REQUEST_METHOD':'POST',
                             'CONTENT_TYPE':self.headers['Content-Type'],
                 })
+                print(form)
                 username = form["uname"].value
                 if login(username, form["psw"].value):
                     print("HERE")

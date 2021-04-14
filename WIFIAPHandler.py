@@ -10,7 +10,9 @@ class WIFIAPHandler():
     def __init__(self):
         self.BSSIDDict = {}
         self.ESSIDDict = {}
+        self.fileslist = []
         self.read_from_files()
+        
     
     def parse_line(self,line):
         fields = line.split(';')
@@ -73,20 +75,46 @@ class WIFIAPHandler():
             to_json.append(wifiap.getHTML())
         return json.dumps(to_json)
 
+    def update_from_file(self,file):
+        f = open(file,'r',encoding = "ISO-8859-1")
+        self.fileslist.append(file)
+        lines = f.readlines()
+        f.close()
+        for line in lines:
+            try:
+                wifiap = self.parse_line(line)
+                if wifiap.BSSID in self.BSSIDDict:
+                    self.BSSIDDict[wifiap.BSSID].update(wifiap)
+                else:
+                    self.BSSIDDict[wifiap.BSSID]=wifiap
+                if wifiap.ESSID in self.ESSIDDict:
+                    if wifiap.BSSID in self.ESSIDDict[wifiap.ESSID]:
+                        pass
+                    else:
+                        self.ESSIDDict[wifiap.ESSID].append(wifiap.BSSID)
+                else:
+                    self.ESSIDDict[wifiap.ESSID] = [wifiap.BSSID]
+            except Exception as e: # work on python 2.x
+                print(str(e))
+    
     def read_from_files(self):
         path = './kismet/*'
         files = glob.glob(path)
         for file in files:
             f = open(file,'r',encoding = "ISO-8859-1")
+            self.fileslist.append(file)
             lines = f.readlines()
             f.close()
             for line in lines:
                 try:
                     wifiap = self.parse_line(line)
-                    self.BSSIDDict[wifiap.BSSID]=wifiap
+                    if wifiap.BSSID in self.BSSIDDict:
+                        self.BSSIDDict[wifiap.BSSID].update(wifiap)
+                    else:
+                        self.BSSIDDict[wifiap.BSSID]=wifiap
                     if wifiap.ESSID in self.ESSIDDict:
                         if wifiap.BSSID in self.ESSIDDict[wifiap.ESSID]:
-                            print("Duplicate")
+                            pass
                         else:
                             self.ESSIDDict[wifiap.ESSID].append(wifiap.BSSID)
                     else:
