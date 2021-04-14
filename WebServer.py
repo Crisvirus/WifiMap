@@ -19,10 +19,19 @@ def MakeHandlerClassFromArgv(WIFIAP_handler):
     passwdDB = TinyDB('./passwordDB/passwdDB.json')
     tokens = {}
     timers = {}
+    apikeys = []
     for line in passwdDB.all():
         username = line['u']
         passwd = line['p']
         user_passwd[username] = passwd
+
+    if path.isfile("./passwordDB/apikeys"):
+        print ("Api file found")
+        f = open("./passwordDB/apikeys","r")
+        lines = f.readlines()
+        f.close()
+        for line in lines:
+            apikeys.append(line)
 
     def delete_token(token):
         del tokens[token]
@@ -30,6 +39,8 @@ def MakeHandlerClassFromArgv(WIFIAP_handler):
         del timers[token]
 
     def token_is_valid(token):
+        if token in apikeys:
+            return True
         if token in tokens:
             return True
         else :
