@@ -107,12 +107,10 @@ def MakeHandlerClassFromArgv(WIFIAP_handler):
                 if '/ESSID' in self.path:
                     tokens = self.path.split('?')
                     essid = tokens[1]
+                    essid = essid.replace("%20",' ')
                     print(essid)
-                    html = "Not Found"
-                    if essid in WIFIAP_handler.ESSIDDict:
-                        html = WIFIAP_handler.getListByESSID(essid)
-                    else:
-                        html = "[Not Found]"
+                    
+                    html = WIFIAP_handler.getListByESSID(essid)
                     self._set_response('application/json')
                     self.wfile.write(bytearray(html,"UTF-8"))
                     return
@@ -215,7 +213,6 @@ def MakeHandlerClassFromArgv(WIFIAP_handler):
                     environ={'REQUEST_METHOD':'POST',
                             'CONTENT_TYPE':self.headers['Content-Type'],
                 })
-                print(form)
                 username = form["uname"].value
                 if login(username, form["psw"].value):
                     print("HERE")

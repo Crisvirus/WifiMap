@@ -5,9 +5,12 @@ import time
 import glob
 import re
 from datetime import datetime
+from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
 
 class WIFIAPHandler():
     def __init__(self):
+        self.ESSIDList = []
         self.BSSIDDict = {}
         self.ESSIDDict = {}
         self.fileslist = []
@@ -68,11 +71,16 @@ class WIFIAPHandler():
         return wifiap
 
     def getListByESSID(self,ESSID):
-        bssid_list = self.ESSIDDict[ESSID]
+        ESSID.strip()
         to_json = []
-        for bssid in bssid_list:
-            wifiap = self.BSSIDDict[bssid]
-            to_json.append(wifiap.getHTML())
+        candidates = process.extract(ESSID, self.ESSIDList)
+        for candidate in candidates:
+            bssid_list = self.ESSIDDict[candidate[0]]
+            
+            for bssid in bssid_list:
+                wifiap = self.BSSIDDict[bssid]
+                to_json.append(wifiap.getHTML())
+        
         return json.dumps(to_json)
 
     def update_from_file(self,file):
@@ -83,6 +91,8 @@ class WIFIAPHandler():
         for line in lines:
             try:
                 wifiap = self.parse_line(line)
+                if wifiap.ESSID not in self.ESSIDList and wifiap.ESSID != '':
+                    self.ESSIDList.append(wifiap.ESSID)
                 if wifiap.BSSID in self.BSSIDDict:
                     self.BSSIDDict[wifiap.BSSID].update(wifiap)
                 else:
@@ -108,6 +118,8 @@ class WIFIAPHandler():
             for line in lines:
                 try:
                     wifiap = self.parse_line(line)
+                    if wifiap.ESSID not in self.ESSIDList and wifiap.ESSID != '':
+                        self.ESSIDList.append(wifiap.ESSID)
                     if wifiap.BSSID in self.BSSIDDict:
                         self.BSSIDDict[wifiap.BSSID].update(wifiap)
                     else:
