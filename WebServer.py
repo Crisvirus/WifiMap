@@ -31,7 +31,7 @@ def MakeHandlerClassFromArgv(WIFIAP_handler):
         lines = f.readlines()
         f.close()
         for line in lines:
-            apikeys.append(line)
+            apikeys.append(line.strip())
 
     def delete_token(token):
         del tokens[token]
@@ -39,6 +39,8 @@ def MakeHandlerClassFromArgv(WIFIAP_handler):
         del timers[token]
 
     def token_is_valid(token):
+        print(token)
+        print(apikeys)
         if token in apikeys:
             return True
         if token in tokens:
@@ -169,7 +171,7 @@ def MakeHandlerClassFromArgv(WIFIAP_handler):
                             token = morsel.value
                 else:
                     print("No cookie for you\n")
-                
+                print(token)
                 if token_is_valid(token):
                     form = cgi.FieldStorage(
                         fp=self.rfile, 
@@ -189,12 +191,12 @@ def MakeHandlerClassFromArgv(WIFIAP_handler):
                         return
                     else:
                         print ("File not exist")
-                        f = open("./kismet/"+filename,'w')
-                        f.write(file.decode("ISO-8859-1"))
-                        f.close()
                         self.send_response(301)
                         self.send_header('Location','/success.html')
                         self.end_headers()
+                        f = open("./kismet/"+filename,'w')
+                        f.write(file.decode("ISO-8859-1"))
+                        f.close()
                         WIFIAP_handler.update_from_file("./kismet/"+filename)
                         return
                     
