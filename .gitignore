@@ -130,5 +130,5 @@ dmypy.json
 
 
 kismet/*.csv
-passwordDB/*.json
+passwordDB/
 certs/*.pem
