@@ -79,7 +79,7 @@ class WIFIAPHandler():
             
             for bssid in bssid_list:
                 wifiap = self.BSSIDDict[bssid]
-                to_json.append(wifiap.getHTML())
+                to_json.insert(0,wifiap.getHTML())
         
         return json.dumps(to_json)
 
